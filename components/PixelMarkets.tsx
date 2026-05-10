@@ -3,7 +3,7 @@ type Token={id:string;rank:number;symbol:string;name:string;emoji:string;image:s
 function fmtP(p:number){if(p>=1000)return p.toLocaleString(undefined,{maximumFractionDigits:0});if(p>=1)return p.toFixed(2);if(p>=0.001)return p.toFixed(4);return p.toExponential(2);}
 function fmtV(n:number){if(n>=1e9)return'$'+(n/1e9).toFixed(1)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(0)+'K';return'$'+n.toFixed(0);}
 
-export function PixelMarkets({tokens,loading}:{tokens:Token[];loading:boolean}){
+export function PixelMarkets({tokens,loading,onTrade}:{tokens:Token[];loading:boolean;onTrade?:(mint:string)=>void}){
   return(
     <div className="container" style={{paddingTop:16}}>
       <div className="sec-hdr">
@@ -35,7 +35,13 @@ export function PixelMarkets({tokens,loading}:{tokens:Token[];loading:boolean}){
                 <td><span className="rt-vol">{fmtV(t.volume24h||t.daily_volume||0)}</span></td>
                 <td><span className="rt-vol">{(t.mcap||0)>0?fmtV(t.mcap):'—'}</span></td>
                 <td>{t.organicScore!=null?<span className="badge badge-cyan">{t.organicScore.toFixed(2)}</span>:<span style={{color:'var(--muted)',fontSize:11}}>—</span>}</td>
-                <td><a href={`https://jup.ag/swap/SOL-${t.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-lime" style={{padding:'4px 12px',fontSize:14}}>SWAP→</a></td>
+                <td>
+                  {onTrade ? (
+                    <button onClick={()=>onTrade(t.id)} className="btn btn-lime" style={{padding:'4px 12px',fontSize:14}}>SWAP→</button>
+                  ) : (
+                    <a href={`https://jup.ag/swap/SOL-${t.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-lime" style={{padding:'4px 12px',fontSize:14}}>SWAP→</a>
+                  )}
+                </td>
               </tr>
             ))}</tbody>
           </table>

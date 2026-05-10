@@ -2,10 +2,13 @@
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
 
-export function PixelTrade({fomoScore}:{fomoScore:number}){
+export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'}:{fomoScore:number;initialOutputMint?:string}){
   const [loaded,setLoaded]=useState(false);
   useEffect(()=>{
-    if(!loaded)return;
+    if(!loaded){
+      if(typeof window!=='undefined' && (window as any).Jupiter) setLoaded(true);
+      return;
+    }
     const init=()=>{
       try{
         (window as any).Jupiter?.init({
@@ -14,12 +17,12 @@ export function PixelTrade({fomoScore}:{fomoScore:number}){
           endpoint:'https://api.mainnet-beta.solana.com',
           strictTokenList:false,
           defaultExplorer:'SolanaFM',
-          formProps:{initialInputMint:'So11111111111111111111111111111111111111112',initialOutputMint:'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'},
+          formProps:{initialInputMint:'So11111111111111111111111111111111111111112',initialOutputMint},
         });
       }catch(e){console.warn(e);}
     };
-    if((window as any).Jupiter) init(); else setTimeout(init,800);
-  },[loaded]);
+    init();
+  },[loaded, initialOutputMint]);
 
   return(
     <div className="container" style={{paddingTop:16}}>

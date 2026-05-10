@@ -174,6 +174,7 @@ export default function Home(){
   const [isDemo,setIsDemo]=useState(false);
   const [scanning,setScanning]=useState(false);
   const [scanAddr,setScanAddr]=useState('');
+  const [tradeMint,setTradeMint]=useState('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
   const [tokens,setTokens]=useState<Token[]>([]);
   const [totalTokens,setTotalTokens]=useState(0);
   const [tokensLoading,setTokensLoading]=useState(true);
@@ -212,8 +213,8 @@ export default function Home(){
       <div className="page">
         {scanning&&<Scanner addr={scanAddr}/>}
         {!scanning&&tab==='home'   &&<HomeTab tokens={tokens} totalTokens={totalTokens} stats={stats} onAnalyze={()=>runAnalysis(DEMO,true)}/>}
-        {!scanning&&tab==='markets'&&<PixelMarkets tokens={tokens} loading={tokensLoading}/>}
-        {!scanning&&tab==='trade'  &&<PixelTrade fomoScore={fomoScore}/>}
+        {!scanning&&tab==='markets'&&<PixelMarkets tokens={tokens} loading={tokensLoading} onTrade={(mint)=>{setTradeMint(mint);setTab('trade');}}/>}
+        {!scanning&&tab==='trade'  &&<PixelTrade fomoScore={fomoScore} initialOutputMint={tradeMint}/>}
         {!scanning&&tab==='orders' &&<PixelOrders tokens={tokens} fomoScore={fomoScore}/>}
         {!scanning&&tab==='predict'&&<PixelPredict markets={markets} loading={marketsLoading}/>}
         {!scanning&&tab==='brain'  &&<BrainTab result={result} isDemo={isDemo} onScan={runAnalysis} loading={loading}/>}
