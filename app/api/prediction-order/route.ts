@@ -14,16 +14,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ownerPubkey and marketId required' }, { status: 400 });
     }
 
+    const depositAmount = Math.floor(Number(amount) * 1_000_000).toString(); // micro USD
+    
     const r = await fetch(`${BASE}/orders`, {
       method: 'POST',
       headers: H,
-      body: JSON.stringify({ ownerPubkey, marketId, isYes: !!isYes, isBuy: isBuy !== false, amount: amount ?? 100 }),
+      body: JSON.stringify({ 
+        ownerPubkey, 
+        marketId, 
+        isYes: !!isYes, 
+        isBuy: isBuy !== false, 
+        depositAmount,
+        depositMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // default to USDC
+      }),
     });
 
     const data = await r.json();
-    if (!r.ok) return NextResponse.json({ error: data?.message ?? 'Order creation failed', raw: data }, { status: r.status });
+    if (!r.ok) return NextResponse.json({ error: data?.error || data?.message || 'Order creation failed', raw: data }, { status: r.status });
 
-    return NextResponse.json({ transaction: data.transaction, requestId: data.requestId ?? null, source: 'Jupiter Prediction V1' });
+    return NextResponse.json({ transaction: data.transaction, txMeta: data.txMeta, source: 'Jupiter Prediction V1' });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

@@ -10,6 +10,7 @@ export function PixelPredict({markets,loading}:{markets:Market[];loading:boolean
   const { publicKey, signTransaction } = useWallet();
   const [filter,setFilter]=useState<'all'|'solana'|'crypto'>('all');
   const [buying,setBuying]=useState<string|null>(null);
+  const [betAmount,setBetAmount]=useState<number>(10);
 
   const displayed=filter==='all'?markets:filter==='solana'?markets.filter(m=>/(SOL|JUP|BONK|WIF|solana)/i.test(m.question)):markets.filter(m=>/(BTC|ETH|crypto)/i.test(m.question));
 
@@ -28,7 +29,7 @@ export function PixelPredict({markets,loading}:{markets:Market[];loading:boolean
           marketId: m.marketId ?? m.id,
           isYes,
           isBuy: true,
-          amount: 10 // default $10
+          amount: betAmount
         })
       });
       const data = await res.json();
@@ -56,15 +57,23 @@ export function PixelPredict({markets,loading}:{markets:Market[];loading:boolean
         </div>
       </div>
 
-      <div style={{marginBottom:12,display:'flex',gap:8,flexWrap:'wrap'}}>
+      <div style={{marginBottom:16,display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
         {(['all','solana','crypto'] as const).map(f=>(
           <button key={f} className={`btn ${filter===f?'btn-lime':'btn-ghost'}`} onClick={()=>setFilter(f)} style={{fontSize:15}}>
             {f.toUpperCase()}
           </button>
         ))}
-        <span style={{fontFamily:'var(--font-pixel)',fontSize:12,color:'var(--muted)',alignSelf:'center',marginLeft:'auto'}}>
-          SOURCE: JUPITER (POLYMARKET + KALSHI)
-        </span>
+        
+        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontFamily:'var(--font-pixel)',fontSize:13,color:'var(--lime)'}}>BET SIZE (USDC):</span>
+          <input 
+            type="number" 
+            className="search-input" 
+            value={betAmount} 
+            onChange={e=>setBetAmount(Number(e.target.value))} 
+            style={{width:80,textAlign:'center'}}
+          />
+        </div>
       </div>
 
       {loading
