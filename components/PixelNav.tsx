@@ -8,8 +8,9 @@ export function PixelNav({tab,setTab,dark,toggleDark}:{tab:string;setTab:(t:stri
     padding:'0 14px',height:'var(--nav-h)',display:'flex',alignItems:'center',gap:6,
     background:tab===id?'rgba(204,255,0,.15)':'transparent',
     color:tab===id?'var(--lime)':'rgba(240,240,232,.7)',
+    borderTop:'none',borderRight:'none',borderLeft:'none',
     borderBottom:tab===id?'3px solid var(--lime)':'3px solid transparent',
-    cursor:'pointer',border:'none',whiteSpace:'nowrap' as const,flexShrink:0 as const,
+    cursor:'pointer',whiteSpace:'nowrap' as const,flexShrink:0 as const,
     transition:'all .15s',letterSpacing:'.06em',
   });
   return(
