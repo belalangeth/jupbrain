@@ -1,48 +1,72 @@
 # Jupiter Bounty Submission: JupBrain
 
-**Project Repo:** [https://github.com/belalangeth/jupbrain](https://github.com/belalangeth/jupbrain)
-**Developer Platform Email:** [Tulis Email Jupiter Anda Di Sini]
-**Demo URL:** [https://jupbrain-f6ca.vercel.app/](https://jupbrain-f6ca.vercel.app/)
+**Repo:** https://github.com/belalangeth/jupbrain
+**Developer Platform Email:** [Your Jupiter Email Here]
+**Demo:** https://jupbrain-f6ca.vercel.app/
 
 ---
 
-## 1. The Project: JupBrain
-**What it is:** JupBrain is a unified, high-performance terminal dashboard built on Next.js that aggressively combines Jupiter's Native Swap V2 API, Tokens V2 API, and the Prediction V1 API into a single, seamless, retro-futuristic interface. 
+## 1. Project Overview
 
-**The weird/ambitious part:** Instead of relying on the standard Jupiter Terminal widget (which is great, but abstracts too much), we fully stripped it down and implemented the **Native V2 Order & Execute API** directly alongside the **Prediction V1 API**. We built a custom backend proxy that handles exact micro-USD bet sizing, routes `x-api-key` securely, and parses raw transaction base64 buffers to execute bets and trades directly via the user's wallet. It maps the Polymarket/Kalshi Clob liquidity straight into a 1-click Solana transaction without leaving the unified dashboard.
+JupBrain is a Next.js terminal dashboard that integrates Jupiter's Native Swap V2 API, Tokens V2 API, and Prediction V1 API into a single interface.
+
+Instead of using the Jupiter Terminal widget, we implemented the **Native V2 Order & Execute API** directly. We built a custom backend proxy that handles exact micro-USD bet sizing, routes `x-api-key` securely, and parses raw transaction base64 buffers to execute bets and trades via the user's wallet — all from one dashboard without a page hop.
 
 ---
 
-## 2. Developer Experience (DX) Report
+## 2. Developer Experience Report
 
-### Onboarding & Time to First Call
-**Time to first successful call:** ~15 minutes.
-Getting the API key from the new Developer Portal was instantaneous. Fetching a basic route via `quote-api` was fast. However, shifting from the V6 quote to the **V2 Native Swap API** (`/order` and `/execute`) added friction. The mental model switch from "Get Quote -> Get Swap Tx" to "Get Order (which includes the Tx) -> Execute" is vastly superior, but the error handling paradigms shifted unexpectedly (more on this below).
+### Time to First Call
 
-### What's Broken / Missing in the Docs
-1. **Prediction API Micro-USD Ambiguity:** 
-   *Link:* [Prediction API Events](https://developers.jup.ag/docs/api-reference/prediction/get-events)
-   *Issue:* The JSON schema definition in the docs specifies `buyYesPriceUsd: 123` and `volume: 123` as `number`. It **does not explicitly state in the schema table** that these values are in **Micro USD**. We had to dig into a completely separate guide page under "Common Questions" to realize we needed to do `(parseInt(microUsd) / 1_000_000)`. Because of this, our UI initially showed 99% odds for everything (due to `Math.round(700000 * 100)` overflow) and 18 Trillion USD in volume. 
-   *Fix:* Annotate `Micro USD` explicitly on the property descriptions in the API Reference page.
+~15 minutes. The API key from the Developer Portal was instant. Moving from V6 quote to the **V2 Native Swap API** (`/order` → `/execute`) added friction. The new mental model (Get Order which includes the Tx → Execute) is better, but the error handling paradigm changed without warning.
 
-2. **Deposit Amount format in Prediction `/orders`:**
-   *Link:* [Prediction Market Guide](https://developers.jup.ag/docs/guides/how-to-build-a-prediction-market-app-on-solana)
-   *Issue:* The guide says `depositAmount: "2000000"` ($2.00). But the `/orders` endpoint throws confusing validation errors if passed as a standard number instead of a string. The requirement to pass exact stringified lamports/micro-USD should be typed strictly in the API docs.
+---
 
-### Where the APIs Bit Us (Edge Cases & Quirks)
-**The 200 OK "Insufficient Funds" Trap in Swap V2 `/order`:**
-When passing a `taker` address to `https://api.jup.ag/swap/v2/order`, if the user has an insufficient SOL balance to pay for gas or the exact swap amount, the API returns a **200 OK** HTTP status. However, the JSON payload contains `"transaction": ""` and `"errorCode": 1, "errorMessage": "Insufficient funds"`. 
-*Why it bites:* Standard `fetch` wrappers rely on `!res.ok` to catch errors. Because it returned 200 OK, our frontend happily consumed the empty `transaction` string and threw a generic local exception when trying to deserialize a blank buffer. REST APIs should ideally return `400 Bad Request` if the transaction builder natively rejects the payload due to insufficient user funds.
+### Bugs & Documentation That Need Fixing
 
-### AI Stack Experience
-We heavily utilized an AI coding agent to map the JSON schemas into TypeScript interfaces. 
-*What failed:* AI slop happens when docs lack semantic typing. Because the OpenAPI/Swagger specs of Jupiter's APIs define prices as standard `number` or `string`, the AI blindly mapped them as standard USD. If Jupiter provided a native **MCP (Model Context Protocol) Server** or a heavily commented `llms.txt` that strictly defines *"All USD variables ending in PriceUsd are 1e6 Micro-USD"*, AI integration would be flawless out of the box.
+**1. Prediction API: micro-USD unit not declared in schema**
 
-### How We Would Rebuild developers.jup.ag
-If we were engineering the Dev Platform:
-1. **Inline API Playgrounds:** Get rid of "Copy cURL" as the primary testing method. Implement an interactive Swagger-like UI directly in the docs where devs can paste their API Key once, change parameters via input boxes, and hit "Send" to see the live JSON response right below the code block.
-2. **Unified Error Schemas:** Standardize errors across the board. If V6 Quote returns `{ error: string }`, V2 Order shouldn't return `{ errorCode: number, errorMessage: string }` with a 200 OK status. Predictability is everything for SDK builders.
+- Link: [Prediction API Events](https://developers.jup.ag/docs/api-reference/prediction/get-events)
+- The schema defines `buyYesPriceUsd` and `volume` as plain `number` with no unit annotation. We only discovered the micro-USD convention by digging through a separate "Common Questions" guide page.
+- Result: our UI initially displayed 99% odds on every market and $18 trillion in volume due to `Math.round(700000 * 100)` overflow.
+- **Fix:** Add a `Micro USD (÷ 1,000,000)` annotation directly on the property description in the API Reference page.
 
-### What We Wish Existed
-1. **Prediction Market WebSockets:** Currently, to get live odds for Polymarket/Kalshi events on Solana, we have to aggressively poll the `/events` or `/markets` endpoints. A `wss://` feed pushing real-time micro-USD price updates would make trading UIs buttery smooth.
-2. **Native React Hooks Package:** We wish `@jup-ag/react` existed—an official library exporting hooks like `useSwapV2()` or `usePredictionMarket()`. Writing the boilerplate to base64-decode the transaction, run `VersionedTransaction.deserialize()`, grab `signTransaction` from the wallet adapter, and handle pre-flight checks manually is tedious. Abstracting this into a single `await executePrediction(marketId, isYes, amount)` hook would cut integration time from hours to minutes.
+**2. Prediction `/orders`: `depositAmount` format not strictly typed**
+
+- Link: [Prediction Market Guide](https://developers.jup.ag/docs/guides/how-to-build-a-prediction-market-app-on-solana)
+- The guide shows `depositAmount: "2000000"` as a string. The endpoint throws a confusing validation error when passed as a number.
+- **Fix:** Use a strict TypeScript `string` type in the schema, not `number | string`.
+
+**3. Swap V2 `/order`: 200 OK with an error body**
+
+- When a `taker` address has insufficient SOL for gas or the swap amount, the API returns HTTP **200 OK** with `"transaction": ""` and `"errorCode": 1, "errorMessage": "Insufficient funds"`.
+- This breaks standard `!res.ok` checks. Our frontend consumed the empty string and crashed when trying to deserialize an empty buffer.
+- **Fix:** Return `400 Bad Request` when the transaction builder rejects the request due to insufficient balance.
+
+---
+
+### Impact on AI-assisted Development
+
+We used an AI coding agent to map JSON schemas into TypeScript interfaces. Because Jupiter's OpenAPI spec defines prices as plain `number` with no unit context, the AI mapped them as standard USD. The entire pricing layer was wrong until we caught it manually.
+
+If Jupiter provided an `llms.txt` or OpenAPI annotations explicitly defining *"all `*PriceUsd` fields are micro-USD (1e6)"*, AI-assisted integration would produce correct types without any manual correction.
+
+---
+
+### Two Things We'd Ask For in developers.jup.ag
+
+**1. Inline API Playground**
+Replace "Copy cURL" as the primary testing method. An interactive Swagger-style UI embedded directly in the docs — paste your API key once, adjust parameters via input fields, see the live JSON response inline — would cut onboarding time significantly.
+
+**2. Unified error schema**
+V6 Quote returns `{ error: string }`. V2 Order returns `{ errorCode: number, errorMessage: string }` with a 200 OK status. SDK builders cannot write a single correct error handler for both. Pick one format, use it across all endpoints, and use correct HTTP status codes.
+
+---
+
+### Two Features We Wish Existed
+
+**1. Prediction Market WebSocket**
+Getting live odds currently requires aggressive polling against `/events` or `/markets`. A `wss://` feed pushing real-time price updates would make trading UIs substantially more responsive.
+
+**2. `@jup-ag/react` hooks package**
+The boilerplate for base64-decoding a transaction, running `VersionedTransaction.deserialize()`, calling `signTransaction` from the wallet adapter, and handling pre-flight checks is significant overhead for every integration. A hook like `await executePrediction(marketId, isYes, amount)` would cut integration time from hours to minutes.
