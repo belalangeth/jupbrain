@@ -45,7 +45,7 @@ export async function GET() {
 function mapEvent(e: any) {
   const m = Array.isArray(e.markets) ? e.markets[0] : null;
   const pricing = m?.pricing || {};
-  let yesP = parseFloat(pricing.buyYesPriceUsd) || parseFloat(pricing.sellYesPriceUsd) || 0;
+  let yesP = (parseFloat(pricing.buyYesPriceUsd) || parseFloat(pricing.sellYesPriceUsd) || 0) / 1_000_000;
   
   if (yesP === 0) {
     if (m?.outcomePrices && m.outcomePrices.length >= 2) {
@@ -67,9 +67,9 @@ function mapEvent(e: any) {
     platformUrl: `https://jup.ag/prediction/${meta.slug ?? ''}`,
     yesOdds:     Math.min(99, Math.max(1, Math.round(yesP * 100))),
     noOdds:      Math.min(99, Math.max(1, Math.round((1 - yesP) * 100))),
-    volume:      parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0,
+    volume:      (parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0) / 1_000_000,
     endDate:     endDate,
-    hot:         (parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0) > 5000,
+    hot:         (parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0) / 1_000_000 > 5000,
     category:    e.category ?? 'Crypto',
     tags:        extractTags(meta.title ?? e.description ?? ''),
     marketId:    e.eventId,
