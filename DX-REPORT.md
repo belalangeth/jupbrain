@@ -2,7 +2,7 @@
 
 **Project Repo:** [https://github.com/belalangeth/jupbrain](https://github.com/belalangeth/jupbrain)
 **Developer Platform Email:** [Tulis Email Jupiter Anda Di Sini]
-**Demo URL:** [Tulis Link Vercel/Deployment Anda Di Sini]
+**Demo URL:** [https://jupbrain-f6ca.vercel.app/](https://jupbrain-f6ca.vercel.app/)
 
 ---
 
