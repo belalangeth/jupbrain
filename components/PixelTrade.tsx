@@ -14,9 +14,8 @@ export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xz
         (window as any).Jupiter?.init({
           displayMode:'integrated',
           integratedTargetId:'jup-terminal-v2',
-          endpoint:'https://api.mainnet-beta.solana.com',
+          endpoint:'https://mainnet.helius-rpc.com/?api-key=1c834a74-d4dd-45fc-9a67-6cdcc81d9774',
           strictTokenList:false,
-          defaultExplorer:'SolanaFM',
           formProps:{initialInputMint:'So11111111111111111111111111111111111111112',initialOutputMint},
         });
       }catch(e){console.warn(e);}

@@ -11,18 +11,18 @@ export async function GET() {
     let events: any[] = [];
     if (r.ok) {
       const d = await r.json();
-      events = Array.isArray(d?.events) ? d.events : (Array.isArray(d) ? d : []);
+      events = Array.isArray(d?.data) ? d.data : [];
     }
 
-    // Fallback: search for crypto events
+    // Fallback: search for crypto events if empty
     if (events.length === 0) {
       for (const term of ['crypto','bitcoin','solana','ethereum','trump']) {
         try {
           const sr = await fetch(`https://api.jup.ag/prediction/v1/events/search?q=${term}&limit=15`, { headers: H, next: { revalidate: 60 } });
           if (sr.ok) {
             const sd = await sr.json();
-            const evts: any[] = Array.isArray(sd?.events) ? sd.events : (Array.isArray(sd) ? sd : []);
-            evts.forEach(e => { if (!events.find(x => x.id === e.id)) events.push(e); });
+            const evts: any[] = Array.isArray(sd?.data) ? sd.data : [];
+            evts.forEach(e => { if (!events.find(x => x.eventId === e.eventId)) events.push(e); });
           }
         } catch {}
         if (events.length >= 12) break;
@@ -44,21 +44,36 @@ export async function GET() {
 
 function mapEvent(e: any) {
   const m = Array.isArray(e.markets) ? e.markets[0] : null;
-  const yesP = m?.yesPrice ?? m?.bestBid ?? 0.5;
+  const pricing = m?.pricing || {};
+  let yesP = parseFloat(pricing.buyYesPriceUsd) || parseFloat(pricing.sellYesPriceUsd) || 0;
+  
+  if (yesP === 0) {
+    if (m?.outcomePrices && m.outcomePrices.length >= 2) {
+      yesP = parseFloat(m.outcomePrices[0]);
+    }
+  }
+  if (yesP === 0 || isNaN(yesP)) yesP = 0.5;
+
+  const meta = e.metadata || {};
+  
+  let endDate = '-';
+  if (m?.resolveAt) endDate = m.resolveAt.slice(0, 10);
+  else if (meta.closeTime) endDate = String(meta.closeTime).slice(0, 10);
+
   return {
-    id:          e.id ?? String(Math.random()),
-    question:    e.title ?? e.description ?? 'Market',
+    id:          e.eventId ?? String(Math.random()),
+    question:    meta.title ?? e.description ?? 'Market',
     platform:    'Jupiter Prediction',
-    platformUrl: `https://jup.ag/prediction/${e.slug ?? e.id ?? ''}`,
+    platformUrl: `https://jup.ag/prediction/${meta.slug ?? ''}`,
     yesOdds:     Math.min(99, Math.max(1, Math.round(yesP * 100))),
     noOdds:      Math.min(99, Math.max(1, Math.round((1 - yesP) * 100))),
-    volume:      parseFloat(e.volume ?? '0') || 0,
-    endDate:     String(e.expiryTime ?? e.endDate ?? '—').slice(0, 10),
-    hot:         (parseFloat(e.volume ?? '0') || 0) > 5000,
+    volume:      parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0,
+    endDate:     endDate,
+    hot:         (parseFloat(e.volumeUsd ?? pricing.volume ?? '0') || 0) > 5000,
     category:    e.category ?? 'Crypto',
-    tags:        extractTags(e.title ?? ''),
-    marketId:    e.id,
-    slug:        e.slug ?? e.id,
+    tags:        extractTags(meta.title ?? e.description ?? ''),
+    marketId:    e.eventId,
+    slug:        meta.slug ?? '',
   };
 }
 
