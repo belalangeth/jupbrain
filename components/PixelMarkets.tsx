@@ -35,7 +35,7 @@ export function PixelMarkets({tokens,loading}:{tokens:Token[];loading:boolean}){
                 <td><span className="rt-vol">{fmtV(t.volume24h||t.daily_volume||0)}</span></td>
                 <td><span className="rt-vol">{(t.mcap||0)>0?fmtV(t.mcap):'—'}</span></td>
                 <td>{t.organicScore!=null?<span className="badge badge-cyan">{t.organicScore.toFixed(2)}</span>:<span style={{color:'var(--muted)',fontSize:11}}>—</span>}</td>
-                <td><a href={`https://jup.ag/swap/SOL-${t.symbol}`} target="_blank" rel="noopener noreferrer" className="btn btn-lime" style={{padding:'4px 12px',fontSize:14}}>SWAP→</a></td>
+                <td><a href={`https://jup.ag/swap/SOL-${t.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-lime" style={{padding:'4px 12px',fontSize:14}}>SWAP→</a></td>
               </tr>
             ))}</tbody>
           </table>
