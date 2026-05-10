@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>JupBrain - Pitch Deck</title>
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+
+		<!-- Custom styles to match the retro-futuristic theme -->
+		<style>
+			.reveal { font-family: 'Courier New', Courier, monospace; }
+			.reveal h1, .reveal h2, .reveal h3 { 
+				font-family: 'Courier New', Courier, monospace; 
+				color: #ccff00; 
+				text-transform: uppercase;
+				font-weight: bold;
+			}
+			.reveal .accent { color: #ff00ff; }
+			.reveal p, .reveal li { color: rgba(240, 240, 232, 0.8); }
+			.pixel-border { border: 2px solid #ccff00; padding: 10px; display: inline-block; }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				
+				<!-- Slide 1 -->
+				<section>
+					<h1>JUP<span class="accent">BRAIN</span></h1>
+					<h3>The Ultimate Solana Native Terminal</h3>
+					<p style="margin-top: 50px; font-size: 0.8em; color: #888;">Jupiter Developer Bounty Submission</p>
+					<p style="font-size: 0.6em;">github.com/belalangeth/jupbrain</p>
+				</section>
+
+				<!-- Slide 2 -->
+				<section>
+					<h2 style="text-align: left;">The <span class="accent">Problem</span></h2>
+					<ul style="font-size: 0.8em; line-height: 1.5;">
+						<li style="margin-bottom: 20px;">Solana's DeFi ecosystem is fragmented across isolated UI widgets.</li>
+						<li style="margin-bottom: 20px;">Third-party iframe widgets are great for simple integrations, but heavily restrict UI/UX customization.</li>
+						<li>Developers struggle to combine deep liquidity routing and prediction betting into a single, cohesive, brandable experience.</li>
+					</ul>
+				</section>
+
+				<!-- Slide 3 -->
+				<section>
+					<h2 style="text-align: left;">Our <span class="accent">Solution</span></h2>
+					<p style="text-align: left; font-size: 0.9em;">We bypassed the widgets and went straight to the metal.</p>
+					<ul style="font-size: 0.8em; line-height: 1.5;">
+						<li style="margin-bottom: 15px;">A custom, retro-futuristic React dashboard built natively.</li>
+						<li style="margin-bottom: 15px;">Combines Swaps, Prediction Markets, and Token Data seamlessly.</li>
+						<li>Full control over the UI, resulting in a cohesive terminal aesthetic.</li>
+					</ul>
+				</section>
+
+				<!-- Slide 4 -->
+				<section>
+					<h2 style="text-align: left;">The <span class="accent">Tech Stack</span></h2>
+					<div style="display: flex; gap: 20px; font-size: 0.7em;">
+						<div style="flex: 1; border: 1px solid #555; padding: 20px;">
+							<h3 style="font-size: 1.2em;">Core APIs</h3>
+							<ul>
+								<li>Jupiter Swap V2 (/order & /execute)</li>
+								<li>Jupiter Prediction V1</li>
+								<li>Jupiter Tokens V2</li>
+							</ul>
+						</div>
+						<div style="flex: 1; border: 1px solid #555; padding: 20px;">
+							<h3 style="font-size: 1.2em;">Frontend</h3>
+							<ul>
+								<li>Next.js & React</li>
+								<li>@solana/web3.js</li>
+								<li>Vanilla Custom CSS</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<!-- Slide 5 -->
+				<section>
+					<h2 style="text-align: left;">Developer <span class="accent">Experience</span></h2>
+					<p style="text-align: left; font-size: 0.8em;">Deeply integrating the API revealed critical edge cases:</p>
+					<ul style="font-size: 0.7em; line-height: 1.5;">
+						<li style="margin-bottom: 15px;"><strong>Micro-USD Quirks:</strong> Prediction API heavily utilizes undocumented Micro-USD values for odds & volume.</li>
+						<li style="margin-bottom: 15px;"><strong>Swap V2 Payloads:</strong> Discovered silent 200 OK responses with empty transactions due to "Insufficient Funds", bypassing standard REST error handling.</li>
+						<li><strong>Outcome:</strong> We wrote a highly detailed DX Report (DX-REPORT.md) to help the Jupiter team improve API standardizations.</li>
+					</ul>
+				</section>
+
+				<!-- Slide 6 -->
+				<section>
+					<h1><span class="accent">Thank</span> You</h1>
+					<p style="font-size: 0.8em;">Built for the Jupiter Ecosystem.</p>
+					<div class="pixel-border" style="margin-top: 30px; font-size: 0.6em;">
+						Demo: jupbrain-f6ca.vercel.app<br>
+						Repo: github.com/belalangeth
+					</div>
+				</section>
+
+			</div>
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				transition: 'none',
+				controls: true,
+				progress: true,
+			});
+		</script>
+	</body>
+</html>
