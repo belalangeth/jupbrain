@@ -34,12 +34,16 @@ export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xz
       // Optionally attach taker if wallet connected for better routing checks
       if (publicKey) params.append('taker', publicKey.toBase58());
 
-      const res = await fetch(`https://api.jup.ag/swap/v2/order?${params}`);
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`Order failed: ${txt}`);
-      }
+      const res = await fetch(`/api/swap/order?${params}`);
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Order failed");
+      }
+      
+      if (data.error || data.errorMessage) {
+        setErrorMsg(data.error || data.errorMessage);
+      }
       setQuote(data);
     } catch (err: any) {
       console.error(err);
@@ -62,7 +66,7 @@ export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xz
       return;
     }
     if (!quote || !quote.transaction) {
-      setErrorMsg("No valid quote found.");
+      setErrorMsg(quote?.error || quote?.errorMessage || "No valid transaction payload. Please check your SOL balance.");
       return;
     }
     setSwapping(true);
@@ -77,8 +81,8 @@ export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xz
       const signedTx = await signTransaction(transaction);
       const signedTxBase64 = Buffer.from(signedTx.serialize()).toString("base64");
 
-      // 3. Execute via Jupiter V2 execute endpoint
-      const res = await fetch(`https://api.jup.ag/swap/v2/execute`, {
+      // 3. Execute via internal proxy
+      const res = await fetch(`/api/swap/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -87,12 +91,11 @@ export function PixelTrade({fomoScore,initialOutputMint='EPjFWdd5AufqSSqeM2qN1xz
         })
       });
 
+      const result = await res.json();
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`Execute failed: ${txt}`);
+        throw new Error(result.error || "Execute failed");
       }
 
-      const result = await res.json();
       if (result.status === "Success" || result.signature) {
         setTxId(result.signature);
       } else {
